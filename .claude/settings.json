@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file_path=$(echo \"$CLAUDE_TOOL_INPUT\" | grep -o '\"file_path\":\"[^\"]*\"' | cut -d'\"' -f4); if echo \"$file_path\" | grep -q '\\.java$'; then echo \"\\n🔨 Java 컴파일 확인 중...\"; cd /Users/seunghwan/Desktop/admin/backend && ./gradlew compileJava --quiet 2>&1 | grep -E \"error:|BUILD (SUCCESS|FAILED)\"; fi; if echo \"$file_path\" | grep -qE '\\.(tsx|ts)$'; then echo \"\\n🔍 TypeScript 타입 확인 중...\"; cd /Users/seunghwan/Desktop/admin/frontend && npx tsc --noEmit 2>&1 | head -20; fi"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew compileJava*)",
+      "Bash(./gradlew bootRun*)",
+      "Bash(npx tsc --noEmit*)",
+      "Bash(npm run dev*)",
+      "Bash(find /Users/seunghwan/Desktop/admin*)",
+      "Bash(grep -r * /Users/seunghwan/Desktop/admin*)"
+    ]
+  }
+}
