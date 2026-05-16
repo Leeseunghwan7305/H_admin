@@ -128,7 +128,7 @@ export default function SalaryPage() {
               <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip
-                formatter={(v: number) => [v.toLocaleString() + '원', '실수령']}
+                formatter={(v) => [Number(v).toLocaleString() + '원', '실수령']}
                 contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
               />
               <Bar dataKey="실수령" fill="#a78bfa" radius={[8, 8, 0, 0]} />

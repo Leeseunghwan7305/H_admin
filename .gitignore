@@ -1,0 +1,22 @@
+# 환경변수 (절대 커밋 금지)
+.env
+*.env
+
+# Terraform 상태 파일
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+
+# macOS
+.DS_Store
+
+# 빌드 결과물
+backend/build/
+frontend/dist/
+frontend/node_modules/
+
+# IDE
+.idea/
+*.iml
+.vscode/

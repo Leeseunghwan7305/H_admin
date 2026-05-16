@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { settingApi } from '../api'
 
+const formatBudget = (n: number) => {
+  if (n >= 100000000) return `${(n / 100000000).toFixed(n % 100000000 === 0 ? 0 : 1)}억원`
+  if (n >= 10000) return `${(n / 10000).toFixed(n % 10000 === 0 ? 0 : 1)}만원`
+  return `${n.toLocaleString()}원`
+}
+
 const MULTIPLIERS = [
   { label: '1.2x', desc: '일반 활동', color: 'emerald' },
   { label: '1.6x', desc: '운동 중', color: 'emerald' },
@@ -12,12 +18,14 @@ export default function SettingsPage() {
   const [weight, setWeight] = useState('')
   const [selectedMult, setSelectedMult] = useState<number | null>(null)
   const [customGoal, setCustomGoal] = useState('')
+  const [expenseBudget, setExpenseBudget] = useState('')
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     settingApi.get('protein_daily_goal').then(r => { if (r.value) setCustomGoal(r.value) }).catch(() => {})
     settingApi.get('protein_body_weight').then(r => { if (r.value) setWeight(r.value) }).catch(() => {})
     settingApi.get('protein_multiplier').then(r => { if (r.value) setSelectedMult(Number(r.value)) }).catch(() => {})
+    settingApi.get('expense_monthly_budget').then(r => { if (r.value) setExpenseBudget(r.value) }).catch(() => {})
   }, [])
 
   const calcGoal = (mult: number) =>
@@ -33,6 +41,7 @@ export default function SettingsPage() {
     await settingApi.set('protein_daily_goal', customGoal)
     await settingApi.set('protein_body_weight', weight)
     if (selectedMult) await settingApi.set('protein_multiplier', String(selectedMult))
+    if (expenseBudget) await settingApi.set('expense_monthly_budget', expenseBudget)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -115,6 +124,27 @@ export default function SettingsPage() {
           />
           <span className="text-gray-400 font-bold">g</span>
         </div>
+      </div>
+
+      {/* 월 지출 예산 */}
+      <div className="bg-white rounded-3xl px-5 py-5 shadow-sm mb-6">
+        <p className="font-extrabold text-gray-700 mb-1">월 지출 예산 💸</p>
+        <p className="text-xs text-gray-400 mb-3">지출 탭에서 예산 대비 진행률을 확인할 수 있어요</p>
+        <div className="flex items-center gap-2">
+          <input
+            className="flex-1 border border-orange-100 rounded-2xl px-4 py-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-orange-300"
+            placeholder="예: 500000"
+            type="number"
+            value={expenseBudget}
+            onChange={e => setExpenseBudget(e.target.value)}
+          />
+          <span className="text-gray-400 font-bold">원</span>
+        </div>
+        {expenseBudget && Number(expenseBudget) > 0 && (
+          <p className="text-sm font-extrabold text-orange-400 mt-2 ml-1">
+            {formatBudget(Number(expenseBudget))}
+          </p>
+        )}
       </div>
 
       <motion.button

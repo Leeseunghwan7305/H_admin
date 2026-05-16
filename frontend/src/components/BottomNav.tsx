@@ -2,9 +2,9 @@ import { NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
 const tabs = [
-  { to: '/', icon: '🥩', label: '단백질' },
-  { to: '/salary', icon: '💰', label: '급여' },
-  { to: '/settings', icon: '⚙️', label: '설정' },
+  { to: '/',        icon: '🥩', label: '단백질' },
+  { to: '/expense', icon: '💸', label: '지출'   },
+  { to: '/settings',icon: '⚙️', label: '설정'   },
 ]
 
 export default function BottomNav() {

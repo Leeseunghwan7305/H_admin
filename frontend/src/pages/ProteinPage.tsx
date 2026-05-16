@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { RadialBarChart, RadialBar, ResponsiveContainer } from 'recharts'
 import { proteinApi, settingApi, type ProteinLog } from '../api'
 import ProteinCalendar from '../components/ProteinCalendar'
+import WeeklySummaryCard from '../components/WeeklySummaryCard'
 
 const pad = (n: number) => String(n).padStart(2, '0')
 const toDateKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
@@ -18,13 +19,6 @@ const getMascot = (percent: number) => {
   return '/rabbits/protein-daily.png'
 }
 
-const getMascotLabel = (percent: number) => {
-  if (isNight) return '야식 조심! 🌙'
-  if (percent >= 100) return '목표 달성! 🎉'
-  if (percent >= 50) return '절반 넘었어! 💪'
-  if (percent > 0) return '화이팅! 🐇'
-  return '기록해봐요!'
-}
 
 export default function ProteinPage() {
   const today = new Date()
@@ -33,6 +27,7 @@ export default function ProteinPage() {
   const [calMonth, setCalMonth] = useState(today.getMonth() + 1)
   const [logs, setLogs] = useState<ProteinLog[]>([])
   const [monthLogs, setMonthLogs] = useState<ProteinLog[]>([])
+  const [recentFoods, setRecentFoods] = useState<ProteinLog[]>([])
   const [goal, setGoal] = useState(150)
   const [showModal, setShowModal] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
@@ -54,6 +49,10 @@ export default function ProteinPage() {
   }, [])
 
   useEffect(() => {
+    proteinApi.getRecent().then(setRecentFoods).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     loadGoal()
   }, [loadGoal])
 
@@ -64,6 +63,23 @@ export default function ProteinPage() {
   useEffect(() => {
     loadMonthLogs(calYear, calMonth)
   }, [calYear, calMonth, loadMonthLogs])
+
+  // 주간 데이터
+  const weekDays = (() => {
+    const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일']
+    const todayKey = toDateKey(today)
+    const diff = today.getDay() === 0 ? -6 : 1 - today.getDay()
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today)
+      d.setDate(today.getDate() + diff + i)
+      const date = toDateKey(d)
+      const dayLogs = monthLogs.filter(l => l.date === date)
+      return { label: DAY_LABELS[i], date, value: dayLogs.reduce((s, l) => s + l.totalProtein, 0), isToday: date === todayKey }
+    })
+  })()
+  const weekTotal = weekDays.reduce((s, d) => s + d.value, 0)
+  const weekAvg = Math.round(weekTotal / 7)
+  const weekAchieved = weekDays.filter(d => d.value >= goal).length
 
   // 달력용 날짜별 합산 맵
   const dayMap = monthLogs.reduce<Record<string, { total: number; goal: number }>>((acc, log) => {
@@ -175,6 +191,19 @@ export default function ProteinPage() {
         </AnimatePresence>
       </div>
 
+      {/* 주간 요약 */}
+      <WeeklySummaryCard
+        title="이번 주 단백질"
+        days={weekDays}
+        goal={goal}
+        barColor={(v, g) => v >= (g ?? 0) ? 'bg-emerald-400' : v >= (g ?? 0) * 0.5 ? 'bg-yellow-400' : 'bg-pink-300'}
+        stats={[
+          { label: '주 평균', value: `${weekAvg}g`, color: 'text-pink-500' },
+          { label: '목표 달성', value: `${weekAchieved} / 7일`, color: weekAchieved >= 5 ? 'text-emerald-500' : 'text-gray-700' },
+          { label: '주 합계', value: `${weekTotal.toFixed(0)}g` },
+        ]}
+      />
+
       {/* 로그 리스트 */}
       <div className="space-y-3">
         <AnimatePresence>
@@ -241,13 +270,30 @@ export default function ProteinPage() {
               className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white rounded-t-3xl px-6 pt-6 pb-10 z-[60]"
             >
               <div className="w-10 h-1.5 rounded-full bg-gray-200 mx-auto mb-4" />
-              <div className="flex items-center gap-3 mb-5">
+              <div className="flex items-center gap-3 mb-4">
                 <img src="/rabbits/meal-plan.png" alt="" className="w-14 h-14 object-contain" />
                 <div>
                   <h2 className="text-lg font-extrabold text-gray-700">단백질 추가 🥩</h2>
                   <p className="text-xs text-gray-400">{selectedDate}</p>
                 </div>
               </div>
+
+              {recentFoods.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs text-gray-400 mb-2 ml-1">최근 음식</p>
+                  <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                    {recentFoods.map(f => (
+                      <button
+                        key={f.foodName}
+                        onClick={() => setForm({ foodName: f.foodName, proteinAmount: String(f.proteinAmount), quantity: '1' })}
+                        className="flex-shrink-0 px-3 py-1.5 bg-pink-50 text-pink-500 text-xs font-bold rounded-2xl border border-pink-100 whitespace-nowrap"
+                      >
+                        {f.foodName} {f.proteinAmount}g
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <input
                 className="w-full border border-pink-100 rounded-2xl px-4 py-3 mb-3 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-pink-300"

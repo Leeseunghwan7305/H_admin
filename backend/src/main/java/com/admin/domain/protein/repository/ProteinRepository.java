@@ -9,4 +9,5 @@ import java.util.List;
 public interface ProteinRepository extends JpaRepository<ProteinLog, Long> {
     List<ProteinLog> findByDateOrderByCreatedAtDesc(LocalDate date);
     List<ProteinLog> findByDateBetweenOrderByDateAscCreatedAtDesc(LocalDate start, LocalDate end);
+    List<ProteinLog> findTop50ByOrderByCreatedAtDesc();
 }

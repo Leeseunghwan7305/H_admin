@@ -11,7 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,22 @@ public class ProteinService {
         LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
         return proteinRepository.findByDateBetweenOrderByDateAscCreatedAtDesc(start, end)
                 .stream().map(ProteinResponse::from).toList();
+    }
+
+    public List<ProteinResponse> getRecentFoods() {
+        return proteinRepository.findTop50ByOrderByCreatedAtDesc()
+                .stream()
+                .collect(Collectors.toMap(
+                        ProteinLog::getFoodName,
+                        p -> p,
+                        (existing, replacement) -> existing,
+                        LinkedHashMap::new
+                ))
+                .values()
+                .stream()
+                .limit(8)
+                .map(ProteinResponse::from)
+                .toList();
     }
 
     @Transactional

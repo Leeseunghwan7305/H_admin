@@ -24,6 +24,11 @@ public class ProteinController {
         return proteinService.getLogsByDate(LocalDate.now());
     }
 
+    @GetMapping("/recent")
+    public List<ProteinResponse> getRecent() {
+        return proteinService.getRecentFoods();
+    }
+
     @GetMapping("/date/{date}")
     public List<ProteinResponse> getByDate(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
