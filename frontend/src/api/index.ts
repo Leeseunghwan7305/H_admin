@@ -2,6 +2,23 @@ import axios from 'axios'
 
 const api = axios.create({ baseURL: '/api' })
 
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+api.interceptors.response.use(
+  res => res,
+  err => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(err)
+  }
+)
+
 export interface ProteinLog {
   id?: number
   foodName: string
@@ -85,4 +102,13 @@ export const expenseApi = {
 export const settingApi = {
   get: (key: string) => api.get<{ key: string; value: string }>(`/settings/${key}`).then(r => r.data),
   set: (key: string, value: string) => api.post('/settings', { key, value }),
+}
+
+export const authApi = {
+  login: (username: string, password: string) =>
+    api.post<{ token: string }>('/auth/login', { username, password }).then(r => r.data),
+  logout: () => {
+    localStorage.removeItem('token')
+    window.location.href = '/login'
+  },
 }

@@ -7,7 +7,7 @@ variable "region" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t2.micro" # 프리티어
+  default     = "t3.micro" # 프리티어
 }
 
 variable "key_name" {
