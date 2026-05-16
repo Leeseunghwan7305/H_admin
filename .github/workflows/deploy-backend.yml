@@ -21,7 +21,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "backend/,docker-compose.yml"
-          target: "~/admin"
+          target: "/home/ubuntu/admin"
 
       - name: Rebuild and restart backend
         uses: appleboy/ssh-action@v1.0.3
@@ -30,6 +30,6 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/admin
+            cd /home/ubuntu/admin
             sudo docker-compose up -d --build backend
             sudo docker system prune -f
