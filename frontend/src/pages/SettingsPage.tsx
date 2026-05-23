@@ -38,12 +38,16 @@ export default function SettingsPage() {
   }
 
   const handleSave = async () => {
-    await settingApi.set('protein_daily_goal', customGoal)
-    await settingApi.set('protein_body_weight', weight)
-    if (selectedMult) await settingApi.set('protein_multiplier', String(selectedMult))
-    if (expenseBudget) await settingApi.set('expense_monthly_budget', expenseBudget)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    try {
+      await settingApi.set('protein_daily_goal', customGoal)
+      await settingApi.set('protein_body_weight', weight)
+      if (selectedMult) await settingApi.set('protein_multiplier', String(selectedMult))
+      if (expenseBudget) await settingApi.set('expense_monthly_budget', expenseBudget)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch {
+      alert('저장에 실패했어요. 다시 시도해주세요.')
+    }
   }
 
   return (

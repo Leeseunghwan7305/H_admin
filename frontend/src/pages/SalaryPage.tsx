@@ -51,19 +51,27 @@ export default function SalaryPage() {
   }
 
   const handleSave = async () => {
-    if (editTarget?.id) {
-      const updated = await salaryApi.update(editTarget.id, { ...form, id: editTarget.id })
-      setRecords(prev => prev.map(r => r.id === editTarget.id ? updated : r))
-    } else {
-      const created = await salaryApi.add(form)
-      setRecords(prev => [created, ...prev])
+    try {
+      if (editTarget?.id) {
+        const updated = await salaryApi.update(editTarget.id, { ...form, id: editTarget.id })
+        setRecords(prev => prev.map(r => r.id === editTarget.id ? updated : r))
+      } else {
+        const created = await salaryApi.add(form)
+        setRecords(prev => [created, ...prev])
+      }
+      setShowModal(false)
+    } catch {
+      alert('저장에 실패했어요. 다시 시도해주세요.')
     }
-    setShowModal(false)
   }
 
   const handleDelete = async (id: number) => {
-    await salaryApi.delete(id)
-    setRecords(prev => prev.filter(r => r.id !== id))
+    try {
+      await salaryApi.delete(id)
+      setRecords(prev => prev.filter(r => r.id !== id))
+    } catch {
+      alert('삭제에 실패했어요.')
+    }
   }
 
   const formatWon = (n: number) => n.toLocaleString('ko-KR') + '원'

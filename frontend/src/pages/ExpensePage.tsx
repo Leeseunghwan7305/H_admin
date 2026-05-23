@@ -98,47 +98,63 @@ export default function ExpensePage() {
 
   const handleAddExpense = async () => {
     if (!expenseForm.itemName || !expenseForm.price) return
-    const created = await expenseApi.add({
-      itemName: expenseForm.itemName,
-      price: Number(expenseForm.price),
-      quantity: Number(expenseForm.quantity) || 1,
-      category: expenseForm.category,
-      date: selectedDate,
-    })
-    setRecords(prev => [created, ...prev])
-    setMonthRecords(prev => [...prev, created])
-    setModalMode(null)
+    try {
+      const created = await expenseApi.add({
+        itemName: expenseForm.itemName,
+        price: Number(expenseForm.price),
+        quantity: Number(expenseForm.quantity) || 1,
+        category: expenseForm.category,
+        date: selectedDate,
+      })
+      setRecords(prev => [created, ...prev])
+      setMonthRecords(prev => [...prev, created])
+      setModalMode(null)
+    } catch {
+      alert('추가에 실패했어요. 다시 시도해주세요.')
+    }
   }
 
   const handleDeleteExpense = async (id: number) => {
-    await expenseApi.delete(id)
-    setRecords(prev => prev.filter(r => r.id !== id))
-    setMonthRecords(prev => prev.filter(r => r.id !== id))
+    try {
+      await expenseApi.delete(id)
+      setRecords(prev => prev.filter(r => r.id !== id))
+      setMonthRecords(prev => prev.filter(r => r.id !== id))
+    } catch {
+      alert('삭제에 실패했어요.')
+    }
   }
 
   const handleSaveFixed = async () => {
     if (!fixedForm.name || !fixedForm.amount) return
-    const payload = {
-      name: fixedForm.name,
-      amount: Number(fixedForm.amount),
-      category: fixedForm.category,
-      billingDay: Number(fixedForm.billingDay) || 1,
-      active: fixedForm.active,
+    try {
+      const payload = {
+        name: fixedForm.name,
+        amount: Number(fixedForm.amount),
+        category: fixedForm.category,
+        billingDay: Number(fixedForm.billingDay) || 1,
+        active: fixedForm.active,
+      }
+      if (editTarget?.type === 'fixed' && editTarget.data.id) {
+        const updated = await expenseApi.updateFixed(editTarget.data.id, payload)
+        setFixedList(prev => prev.map(f => f.id === editTarget.data.id ? updated : f))
+      } else {
+        const created = await expenseApi.addFixed(payload)
+        setFixedList(prev => [...prev, created])
+      }
+      setModalMode(null)
+      setEditTarget(null)
+    } catch {
+      alert('저장에 실패했어요. 다시 시도해주세요.')
     }
-    if (editTarget?.type === 'fixed' && editTarget.data.id) {
-      const updated = await expenseApi.updateFixed(editTarget.data.id, payload)
-      setFixedList(prev => prev.map(f => f.id === editTarget.data.id ? updated : f))
-    } else {
-      const created = await expenseApi.addFixed(payload)
-      setFixedList(prev => [...prev, created])
-    }
-    setModalMode(null)
-    setEditTarget(null)
   }
 
   const handleDeleteFixed = async (id: number) => {
-    await expenseApi.deleteFixed(id)
-    setFixedList(prev => prev.filter(f => f.id !== id))
+    try {
+      await expenseApi.deleteFixed(id)
+      setFixedList(prev => prev.filter(f => f.id !== id))
+    } catch {
+      alert('삭제에 실패했어요.')
+    }
   }
 
   return (

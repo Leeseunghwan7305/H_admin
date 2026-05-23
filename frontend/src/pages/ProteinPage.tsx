@@ -91,22 +91,30 @@ export default function ProteinPage() {
 
   const handleAdd = async () => {
     if (!form.foodName || !form.proteinAmount) return
-    const log = await proteinApi.add({
-      foodName: form.foodName,
-      proteinAmount: Number(form.proteinAmount),
-      quantity: Number(form.quantity) || 1,
-      date: selectedDate,
-    })
-    setLogs(prev => [log, ...prev])
-    setMonthLogs(prev => [...prev, log])
-    setForm({ foodName: '', proteinAmount: '', quantity: '1' })
-    setShowModal(false)
+    try {
+      const log = await proteinApi.add({
+        foodName: form.foodName,
+        proteinAmount: Number(form.proteinAmount),
+        quantity: Number(form.quantity) || 1,
+        date: selectedDate,
+      })
+      setLogs(prev => [log, ...prev])
+      setMonthLogs(prev => [...prev, log])
+      setForm({ foodName: '', proteinAmount: '', quantity: '1' })
+      setShowModal(false)
+    } catch {
+      alert('추가에 실패했어요. 다시 시도해주세요.')
+    }
   }
 
   const handleDelete = async (id: number) => {
-    await proteinApi.delete(id)
-    setLogs(prev => prev.filter(l => l.id !== id))
-    setMonthLogs(prev => prev.filter(l => l.id !== id))
+    try {
+      await proteinApi.delete(id)
+      setLogs(prev => prev.filter(l => l.id !== id))
+      setMonthLogs(prev => prev.filter(l => l.id !== id))
+    } catch {
+      alert('삭제에 실패했어요.')
+    }
   }
 
   const isToday = selectedDate === toDateKey(today)
